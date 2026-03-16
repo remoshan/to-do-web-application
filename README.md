@@ -6,10 +6,6 @@ This project provides a clean, developer-friendly stack to help users manage the
 
 ---
 
-### Visuals
-
----
-
 ### Features
 
 - **Task Management**: Create, update, complete, and delete tasks with title, description, and due date.
