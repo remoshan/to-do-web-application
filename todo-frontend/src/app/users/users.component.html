@@ -1,0 +1,112 @@
+<!-- STATS ROW -->
+<div nz-row [nzGutter]="16" style="margin-bottom: 20px">
+  <div nz-col [nzSpan]="12">
+    <nz-card>
+      <nz-statistic nzTitle="Total Users" [nzValue]="totalUsers"></nz-statistic>
+    </nz-card>
+  </div>
+  <div nz-col [nzSpan]="12">
+    <nz-card>
+      <nz-statistic
+        nzTitle="Total Assigned Todos"
+        [nzValue]="totalTodos"
+        [nzValueStyle]="{ color: '#1677ff' }"
+      ></nz-statistic>
+    </nz-card>
+  </div>
+</div>
+
+<!-- MAIN CARD -->
+<nz-card>
+  <div class="toolbar">
+    <h2 nz-typography>Users</h2>
+    <button nz-button nzType="primary" (click)="openAddModal()">
+      <span nz-icon nzType="user-add"></span>
+      Add User
+    </button>
+  </div>
+
+  <nz-divider></nz-divider>
+
+  <nz-spin [nzSpinning]="loading">
+    <nz-table #userTable [nzData]="users" [nzBordered]="true" [nzPageSize]="10">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Todos Assigned</th>
+          <th>Created At</th>
+          <th nzWidth="160px">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of userTable.data">
+          <td>{{ user.id }}</td>
+          <td>
+            <strong>{{ user.name }}</strong>
+          </td>
+          <td>{{ user.email }}</td>
+          <td>
+            <nz-tag [nzColor]="(user.todos?.length || 0) > 0 ? 'blue' : 'default'">
+              {{ user.todos?.length || 0 }} todo(s)
+            </nz-tag>
+          </td>
+          <td class="text-muted">{{ user.createdAt | date: 'mediumDate' }}</td>
+          <td>
+            <nz-space>
+              <button
+                *nzSpaceItem
+                nz-button
+                nzType="default"
+                nzSize="small"
+                (click)="openEditModal(user)"
+              >
+                <span nz-icon nzType="edit"></span> Edit
+              </button>
+              <button
+                *nzSpaceItem
+                nz-button
+                nzType="default"
+                nzDanger
+                nzSize="small"
+                nz-popconfirm
+                nzPopconfirmTitle="Are you sure you want to delete this user?"
+                (nzOnConfirm)="deleteUser(user.id)"
+              >
+                <span nz-icon nzType="delete"></span> Delete
+              </button>
+            </nz-space>
+          </td>
+        </tr>
+      </tbody>
+    </nz-table>
+  </nz-spin>
+</nz-card>
+
+<!-- ADD / EDIT MODAL -->
+<nz-modal
+  [(nzVisible)]="isModalVisible"
+  [nzTitle]="isEditMode ? 'Edit User' : 'Add New User'"
+  [nzOkText]="isEditMode ? 'Save Changes' : 'Add User'"
+  (nzOnOk)="handleSubmit()"
+  (nzOnCancel)="handleCancel()"
+>
+  <ng-container *nzModalContent>
+    <form nz-form [formGroup]="userForm" nzLayout="vertical">
+      <nz-form-item>
+        <nz-form-label nzRequired>Name</nz-form-label>
+        <nz-form-control nzErrorTip="Name is required and must be at least 2 characters.">
+          <input nz-input formControlName="name" placeholder="Enter full name" />
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzRequired>Email</nz-form-label>
+        <nz-form-control nzErrorTip="Please enter a valid email address.">
+          <input nz-input formControlName="email" placeholder="Enter email address" />
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </ng-container>
+</nz-modal>

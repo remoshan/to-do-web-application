@@ -1,0 +1,20 @@
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toolbar h2 {
+  margin: 0;
+}
+.row-done {
+  opacity: 0.55;
+}
+.text-done {
+  text-decoration: line-through;
+  color: #aaa;
+}
+.text-muted {
+  color: #aaa;
+  font-size: 13px;
+}

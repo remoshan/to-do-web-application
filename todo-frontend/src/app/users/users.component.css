@@ -1,0 +1,13 @@
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toolbar h2 {
+  margin: 0;
+}
+.text-muted {
+  color: #aaa;
+  font-size: 13px;
+}

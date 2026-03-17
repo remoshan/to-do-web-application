@@ -3,53 +3,33 @@
 }
 
 .app-header {
-  background: #fff;
-  border-bottom: 1px solid #f0f0f0;
+  background: #001529;
+  padding: 0 24px;
   display: flex;
   align-items: center;
-  padding: 0 24px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 32px;
 }
 
 .app-title {
   font-size: 18px;
   font-weight: 700;
-  color: #1677ff;
+  color: white;
+  white-space: nowrap;
+}
+
+.nav-menu {
+  flex: 1;
+  border-bottom: none !important;
+  line-height: 64px;
 }
 
 .app-content {
   padding: 24px;
   background: #f5f5f5;
-}
-
-.stats-row {
-  margin-bottom: 20px;
-}
-
-.main-card {
-  border-radius: 8px;
-}
-
-.toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.toolbar h2 {
-  margin: 0;
-}
-
-.row-done {
-  opacity: 0.55;
-}
-
-.text-done {
-  text-decoration: line-through;
-  color: #aaa;
-}
-
-.text-muted {
-  color: #aaa;
-  font-size: 13px;
 }
