@@ -9,12 +9,14 @@ async function bootstrap() {
     origin: 'http://localhost:4200',
   });
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   await app.listen(3000);
-  console.log('Backend running on http://localhost:3000');
+  console.log('Backend is running on http://localhost:3000');
 }
 bootstrap();
