@@ -26,6 +26,11 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
+  @Get(':id/todos')
+  findTodosByUser(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.findTodosByUser(id);
+  }
+
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.create(createUserDto);

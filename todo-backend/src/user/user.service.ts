@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -54,7 +55,26 @@ export class UserService {
 
   async remove(id: number): Promise<{ message: string }> {
     const user = await this.findOne(id);
+
+    const incompleteTodos = user.todos.filter((todo) => !todo.isCompleted);
+
+    if (incompleteTodos.length > 0) {
+      throw new BadRequestException(
+        `Cannot delete user. They have ${incompleteTodos.length} incomplete task(s). ` +
+          `Please complete or delete all tasks before removing this user.`,
+      );
+    }
+
     await this.userRepository.remove(user);
     return { message: `User with id ${id} deleted successfully.` };
+  }
+
+  async findTodosByUser(id: number): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['todos'],
+    });
+    if (!user) throw new NotFoundException(`User with id ${id} not found.`);
+    return user;
   }
 }
