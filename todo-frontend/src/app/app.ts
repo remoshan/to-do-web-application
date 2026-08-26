@@ -1,41 +1,95 @@
 import { Component, OnInit, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Todo } from './todo.model';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { TodoService } from './todo.service';
+import { Todo } from './todo.model';
+
+import { NzTableModule } from 'ng-zorro-antd/table';
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { NzFormModule } from 'ng-zorro-antd/form';
+import { NzInputModule } from 'ng-zorro-antd/input';
+import { NzDatePickerModule } from 'ng-zorro-antd/date-picker';
+import { NzTagModule } from 'ng-zorro-antd/tag';
+import { NzPopconfirmModule } from 'ng-zorro-antd/popconfirm';
+import { NzSpinModule } from 'ng-zorro-antd/spin';
+import { NzLayoutModule } from 'ng-zorro-antd/layout';
+import { NzTypographyModule } from 'ng-zorro-antd/typography';
+import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { NzCheckboxModule } from 'ng-zorro-antd/checkbox';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzSpaceModule } from 'ng-zorro-antd/space';
+import { NzCardModule } from 'ng-zorro-antd/card';
+import { NzStatisticModule } from 'ng-zorro-antd/statistic';
+import { NzGridModule } from 'ng-zorro-antd/grid';
+import { NzBadgeModule } from 'ng-zorro-antd/badge';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NzTableModule,
+    NzButtonModule,
+    NzModalModule,
+    NzFormModule,
+    NzInputModule,
+    NzDatePickerModule,
+    NzTagModule,
+    NzPopconfirmModule,
+    NzSpinModule,
+    NzLayoutModule,
+    NzTypographyModule,
+    NzDividerModule,
+    NzCheckboxModule,
+    NzIconModule,
+    NzSpaceModule,
+    NzCardModule,
+    NzStatisticModule,
+    NzGridModule,
+    NzBadgeModule,
+  ],
   templateUrl: './app.html',
-  styleUrls: ['./app.css']
+  styleUrls: ['./app.css'],
+  providers: [NzMessageService],
 })
 export class App implements OnInit {
   todos: Todo[] = [];
-
-  newTitle = '';
-  newDescription = '';
-  newDueDate = '';
-  showForm = false;
-
-  titleError = '';
-  dueDateError = '';
-
-  editingId: number | null = null;
-  editTitle = '';
-  editDescription = '';
-  editDueDate = '';
-  editTitleError = '';
-  editDueDateError = '';
-
-  errorMessage = '';
   loading = false;
 
-  constructor(private todoService: TodoService, private ngZone: NgZone) { }
+  isModalVisible = false;
+  isEditMode = false;
+  editingTodo: Todo | null = null;
+
+  todoForm!: FormGroup;
+
+  constructor(
+    private todoService: TodoService,
+    private ngZone: NgZone,
+    private fb: FormBuilder,
+    private message: NzMessageService,
+  ) {}
 
   ngOnInit(): void {
+    this.initForm();
     this.loadTodos();
+  }
+
+  initForm(): void {
+    this.todoForm = this.fb.group({
+      title: [null, [Validators.required, Validators.minLength(3)]],
+      description: [null],
+      dueDate: [null, [Validators.required]],
+    });
   }
 
   loadTodos(): void {
@@ -49,141 +103,121 @@ export class App implements OnInit {
       },
       error: () => {
         this.ngZone.run(() => {
-          this.errorMessage = 'Failed to load todos. Is the backend running?';
+          this.message.error('Failed to load todos. Is the backend running?');
           this.loading = false;
         });
-      }
-    });
-  }
-
-  validateAdd(): boolean {
-    let valid = true;
-    this.titleError = '';
-    this.dueDateError = '';
-
-    if (!this.newTitle.trim()) {
-      this.titleError = 'Title is required.';
-      valid = false;
-    } else if (this.newTitle.trim().length < 3) {
-      this.titleError = 'Title must be at least 3 characters.';
-      valid = false;
-    }
-
-    if (!this.newDueDate) {
-      this.dueDateError = 'Due date is required.';
-      valid = false;
-    } else if (new Date(this.newDueDate) < new Date(new Date().toDateString())) {
-      this.dueDateError = 'Due date cannot be in the past.';
-      valid = false;
-    }
-
-    return valid;
-  }
-
-  addTodo(): void {
-    if (!this.validateAdd()) return;
-    this.todoService.create({
-      title: this.newTitle.trim(),
-      description: this.newDescription.trim(),
-      dueDate: this.newDueDate
-    }).subscribe({
-      next: (todo) => {
-        this.ngZone.run(() => {
-          this.todos.push(todo);
-          this.newTitle = '';
-          this.newDescription = '';
-          this.newDueDate = '';
-          this.titleError = '';
-          this.dueDateError = '';
-          this.showForm = false;
-        });
       },
-      error: () => {
-        this.errorMessage = 'Failed to create todo.';
-      }
     });
+  }
+
+  get totalCount(): number {
+    return this.todos.length;
+  }
+  get completedCount(): number {
+    return this.todos.filter((t) => t.isCompleted).length;
+  }
+  get pendingCount(): number {
+    return this.todos.filter((t) => !t.isCompleted).length;
+  }
+
+  openAddModal(): void {
+    this.isEditMode = false;
+    this.editingTodo = null;
+    this.todoForm.reset();
+    this.isModalVisible = true;
+  }
+
+  openEditModal(todo: Todo): void {
+    this.isEditMode = true;
+    this.editingTodo = todo;
+    this.todoForm.setValue({
+      title: todo.title,
+      description: todo.description || null,
+      dueDate: todo.dueDate ? new Date(todo.dueDate) : null,
+    });
+    this.isModalVisible = true;
+  }
+
+  handleCancel(): void {
+    this.isModalVisible = false;
+    this.todoForm.reset();
+  }
+
+  handleSubmit(): void {
+    if (this.todoForm.invalid) {
+      Object.values(this.todoForm.controls).forEach((control) => {
+        control.markAsDirty();
+        control.updateValueAndValidity();
+      });
+      return;
+    }
+
+    const { title, description, dueDate } = this.todoForm.value;
+    const formattedDate = dueDate instanceof Date ? dueDate.toISOString().split('T')[0] : dueDate;
+
+    if (this.isEditMode && this.editingTodo) {
+      this.todoService
+        .update(this.editingTodo.id, { title, description, dueDate: formattedDate })
+        .subscribe({
+          next: (updated) => {
+            this.ngZone.run(() => {
+              const index = this.todos.findIndex((t) => t.id === this.editingTodo!.id);
+              this.todos[index] = updated;
+              this.todos = [...this.todos];
+              this.isModalVisible = false;
+              this.message.success('Task updated successfully!');
+            });
+          },
+          error: () => this.message.error('Failed to update task.'),
+        });
+    } else {
+      this.todoService.create({ title, description, dueDate: formattedDate }).subscribe({
+        next: (todo) => {
+          this.ngZone.run(() => {
+            this.todos = [...this.todos, todo];
+            this.isModalVisible = false;
+            this.message.success('Task created successfully!');
+          });
+        },
+        error: () => this.message.error('Failed to create task.'),
+      });
+    }
   }
 
   toggleComplete(todo: Todo): void {
     this.todoService.update(todo.id, { isCompleted: !todo.isCompleted }).subscribe({
       next: (updated) => {
         this.ngZone.run(() => {
-          const index = this.todos.findIndex(t => t.id === todo.id);
+          const index = this.todos.findIndex((t) => t.id === todo.id);
           this.todos[index] = updated;
+          this.todos = [...this.todos];
+          this.message.success(
+            updated.isCompleted ? 'Task marked as complete!' : 'Task marked as incomplete.',
+          );
         });
       },
-      error: () => {
-        this.errorMessage = 'Failed to update todo.';
-      }
+      error: () => this.message.error('Failed to update task.'),
     });
-  }
-
-  startEdit(todo: Todo): void {
-    this.editingId = todo.id;
-    this.editTitle = todo.title;
-    this.editDescription = todo.description;
-    this.editDueDate = todo.dueDate;
-    this.editTitleError = '';
-    this.editDueDateError = '';
-  }
-
-  validateEdit(): boolean {
-    let valid = true;
-    this.editTitleError = '';
-    this.editDueDateError = '';
-
-    if (!this.editTitle.trim()) {
-      this.editTitleError = 'Title is required.';
-      valid = false;
-    } else if (this.editTitle.trim().length < 3) {
-      this.editTitleError = 'Title must be at least 3 characters.';
-      valid = false;
-    }
-
-    if (!this.editDueDate) {
-      this.editDueDateError = 'Due date is required.';
-      valid = false;
-    }
-
-    return valid;
-  }
-
-  saveEdit(todo: Todo): void {
-    if (!this.validateEdit()) return;
-    this.todoService.update(todo.id, {
-      title: this.editTitle.trim(),
-      description: this.editDescription.trim(),
-      dueDate: this.editDueDate
-    }).subscribe({
-      next: (updated) => {
-        this.ngZone.run(() => {
-          const index = this.todos.findIndex(t => t.id === todo.id);
-          this.todos[index] = updated;
-          this.editingId = null;
-        });
-      },
-      error: () => {
-        this.errorMessage = 'Failed to update todo.';
-      }
-    });
-  }
-
-  cancelEdit(): void {
-    this.editingId = null;
   }
 
   deleteTodo(id: number): void {
-    if (confirm('Are you sure you want to delete this task?')) {
-      this.todoService.delete(id).subscribe({
-        next: () => {
-          this.ngZone.run(() => {
-            this.todos = this.todos.filter(t => t.id !== id);
-          });
-        },
-        error: () => {
-          this.errorMessage = 'Failed to delete todo.';
-        }
-      });
-    }
+    this.todoService.delete(id).subscribe({
+      next: () => {
+        this.ngZone.run(() => {
+          this.todos = this.todos.filter((t) => t.id !== id);
+          this.message.success('Task deleted successfully!');
+        });
+      },
+      error: () => this.message.error('Failed to delete task.'),
+    });
   }
+
+  isOverdue(dueDate: string): boolean {
+    if (!dueDate) return false;
+    return new Date(dueDate) < new Date(new Date().toDateString());
+  }
+
+  disablePastDates = (current: Date): boolean => {
+    return current < new Date(new Date().toDateString());
+  };
 }
