@@ -1,6 +1,18 @@
 <nz-layout class="app-layout">
   <nz-header class="app-header">
-    <span class="app-title">To-Do Application</span>
+    <div class="header-inner">
+      <span class="app-title">To-Do Application</span>
+      <ul nz-menu nzMode="horizontal" nzTheme="dark" class="nav-menu">
+        <li nz-menu-item routerLink="/todos" routerLinkActive="ant-menu-item-selected">
+          <span nz-icon nzType="unordered-list"></span>
+          Todos
+        </li>
+        <li nz-menu-item routerLink="/users" routerLinkActive="ant-menu-item-selected">
+          <span nz-icon nzType="team"></span>
+          Users
+        </li>
+      </ul>
+    </div>
   </nz-header>
 
   <nz-content class="app-content">
